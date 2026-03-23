@@ -1,0 +1,30 @@
+# Visual Studio / .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / IDE
+.idea/
+
+# NuGet
+*.nupkg
+packages/
+
+# SQLite DB (do not commit your runtime DB)
+reminders.db
+*.db
+
+# Logs, temp
+*.log
+*.tmp
+
+# publish
+publish/
+
+# OS
+Thumbs.db
+.DS_Store
