@@ -258,3 +258,5 @@ C:\Users\Admin\System Apps\BuzzIt\obj\Debug\net8.0\refint\BuzzIt.dll
 C:\Users\Admin\System Apps\BuzzIt\obj\Debug\net8.0\BuzzIt.pdb
 C:\Users\Admin\System Apps\BuzzIt\obj\Debug\net8.0\BuzzIt.genruntimeconfig.cache
 C:\Users\Admin\System Apps\BuzzIt\obj\Debug\net8.0\ref\BuzzIt.dll
+C:\Users\Admin\System Apps\BuzzIt\obj\Debug\net8.0\BuzzIt.sourcelink.json
+C:\Users\Admin\System Apps\BuzzIt\bin\Debug\net8.0\postman\BuzzIt.Local.REST.postman_collection.json

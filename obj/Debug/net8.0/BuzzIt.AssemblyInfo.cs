@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BuzzIt")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ec8b17ee9e88815197310a32951a3b1bd1e2f0f6")]
 [assembly: System.Reflection.AssemblyProductAttribute("BuzzIt")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BuzzIt")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
