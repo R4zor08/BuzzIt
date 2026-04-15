@@ -7,6 +7,10 @@ namespace BuzzIt.Models
     {
         public int Id { get; set; }
 
+        public int UserId { get; set; }
+
+        public ApplicationUser? User { get; set; }
+
         [Required]
         [StringLength(100)]
         public string Title { get; set; } = string.Empty;

@@ -1,0 +1,42 @@
+@model BuzzIt.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Create account";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-panel mx-auto">
+    <div class="text-center mb-4">
+        <h1 class="h3 fw-bold text-white mb-2">Create your account</h1>
+        <p class="auth-muted small mb-0">Choose a username and password. You will sign in on the next step.</p>
+    </div>
+
+    <form asp-action="Register" asp-controller="Account" method="post" novalidate class="auth-form">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 rounded-3 small py-2"></div>
+
+        <div class="mb-3">
+            <label asp-for="Username" class="form-label auth-muted small fw-semibold"></label>
+            <input asp-for="Username" class="form-control form-control-lg auth-input" autocomplete="username" autofocus placeholder="Username" />
+            <span asp-validation-for="Username" class="text-warning small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label auth-muted small fw-semibold"></label>
+            <input asp-for="Password" class="form-control form-control-lg auth-input" autocomplete="new-password" placeholder="Password" />
+            <span asp-validation-for="Password" class="text-warning small"></span>
+        </div>
+        <div class="mb-4">
+            <label asp-for="ConfirmPassword" class="form-label text-white-50 small fw-semibold"></label>
+            <input asp-for="ConfirmPassword" class="form-control form-control-lg auth-input" autocomplete="new-password" placeholder="Confirm password" />
+            <span asp-validation-for="ConfirmPassword" class="text-warning small"></span>
+        </div>
+        <button type="submit" class="btn btn-auth-primary btn-lg w-100 rounded-3 fw-semibold">Register</button>
+    </form>
+
+    <p class="text-center auth-muted small mt-4 mb-0">
+        Already have an account?
+        <a asp-action="Login" asp-controller="Account" class="link-light fw-semibold text-decoration-none">Sign in</a>
+    </p>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

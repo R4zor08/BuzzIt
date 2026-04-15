@@ -34,12 +34,6 @@ namespace BuzzIt.Requests
             if (!ValidateRequired(Content, "Content"))
                 return false;
 
-            if (DueDate.HasValue && DueDate.Value.Date < DateTime.Now.Date)
-            {
-                AddError("DueDate", "Due date cannot be in the past.");
-                return false;
-            }
-
             return true;
         }
 

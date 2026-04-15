@@ -4,42 +4,49 @@
     ViewData["Title"] = "Create Reminder";
 }
 
-<h2>Create Reminder</h2>
+<div class="form-container animate-fade-in">
+    <h1 class="d-flex flex-wrap align-items-center gap-2 mb-4">
+        <i class="bi bi-bell-fill text-success" aria-hidden="true"></i>
+        <span>Create reminder</span>
+    </h1>
 
-<form asp-action="Create">
-    <div class="form-group">
-        <label asp-for="Title" class="control-label"></label>
-        <input asp-for="Title" class="form-control" />
-        <span asp-validation-for="Title" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Time" class="control-label"></label>
-        <input asp-for="Time" class="form-control" type="datetime-local" />
-        <span asp-validation-for="Time" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Description" class="control-label"></label>
-        <input asp-for="Description" class="form-control" />
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Category" class="control-label"></label>
-        <select asp-for="Category" class="form-control" asp-items="Html.GetEnumSelectList<BuzzIt.Models.Category>()"></select>
-    </div>
-    <div class="form-group">
-        <label asp-for="Priority" class="control-label"></label>
-        <select asp-for="Priority" class="form-control" asp-items="Html.GetEnumSelectList<BuzzIt.Models.Priority>()"></select>
-    </div>
-    <div class="form-group">
-        <label asp-for="DueDate" class="control-label"></label>
-        <input asp-for="DueDate" class="form-control" type="date" />
-    </div>
-    <div class="form-group">
-        <input type="submit" value="Create" class="btn btn-primary" />
-        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-    </div>
-</form>
+    <form asp-action="Create" method="post" class="needs-validation" novalidate>
+        <div class="mb-4">
+            <label asp-for="Title" class="form-label">Title</label>
+            <input asp-for="Title" class="form-control" placeholder="What should we remind you about?" />
+            <span asp-validation-for="Title" class="text-danger small d-block mt-1"></span>
+        </div>
+        <div class="mb-4">
+            <label asp-for="Time" class="form-label">Time</label>
+            <input asp-for="Time" class="form-control" type="datetime-local" />
+            <span asp-validation-for="Time" class="text-danger small d-block mt-1"></span>
+        </div>
+        <div class="mb-4">
+            <label asp-for="Description" class="form-label">Description <span class="text-muted fw-normal">(optional)</span></label>
+            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Extra context…"></textarea>
+            <span asp-validation-for="Description" class="text-danger small d-block mt-1"></span>
+        </div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label asp-for="Category" class="form-label">Category</label>
+                <select asp-for="Category" class="form-select" asp-items="Html.GetEnumSelectList<BuzzIt.Models.Category>()"></select>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Priority" class="form-label">Priority</label>
+                <select asp-for="Priority" class="form-select" asp-items="Html.GetEnumSelectList<BuzzIt.Models.Priority>()"></select>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="DueDate" class="form-label">Due date <span class="text-muted fw-normal">(optional)</span></label>
+                <input asp-for="DueDate" class="form-control" type="date" />
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-3">
+            <button type="submit" class="btn btn-gradient btn-gradient-success rounded-3 px-4"><i class="bi bi-check-lg"></i> Save</button>
+            <a asp-action="Index" class="btn btn-outline-gradient rounded-3 px-4">Cancel</a>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
 }

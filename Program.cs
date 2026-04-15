@@ -1,6 +1,10 @@
 using BuzzIt.Data;
+using BuzzIt.Models;
 using BuzzIt.Services.Interfaces;
 using BuzzIt.Services.Implementations;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Sqlite;
 
@@ -17,6 +21,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Register services
 builder.Services.AddScoped<IReminderService, ReminderService>();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddSingleton<IPasswordHasher<ApplicationUser>, PasswordHasher<ApplicationUser>>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.AccessDeniedPath = "/Account/Login";
+    });
 
 var app = builder.Build();
 
@@ -33,12 +46,19 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Post}/{action=Index}/{id?}");
+    pattern: "{controller=Post}/{action=Index}/{id?}",
+    defaults: null,
+    constraints: null,
+    dataTokens: new RouteValueDictionary
+    {
+        ["Namespaces"] = new[] { "BuzzIt.Controllers" }
+    });
+
+app.MapControllers();
 
 app.Run();

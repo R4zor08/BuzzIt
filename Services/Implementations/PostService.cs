@@ -14,21 +14,24 @@ namespace BuzzIt.Services.Implementations
             _context = context;
         }
 
-        public IEnumerable<Post> GetAll()
+        public IEnumerable<Post> GetAll(int userId)
         {
-            return _context.Posts
+            return BaseQuery(userId)
                 .OrderByDescending(p => p.Priority)
                 .ThenBy(p => p.DueDate)
                 .ToList();
         }
 
-        public IEnumerable<Post> Search(string? searchTerm, Category? category, Priority? priority, bool? isCompleted)
+        public IEnumerable<Post> Search(int userId, string? searchTerm, Category? category, Priority? priority, bool? isCompleted)
         {
-            var query = _context.Posts.AsQueryable();
+            var query = BaseQuery(userId);
 
-            if (!string.IsNullOrEmpty(searchTerm))
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                query = query.Where(p => p.Title.Contains(searchTerm) || p.Content.Contains(searchTerm));
+                var term = searchTerm.Trim().ToLowerInvariant();
+                query = query.Where(p =>
+                    p.Title.ToLower().Contains(term) ||
+                    p.Content.ToLower().Contains(term));
             }
 
             if (category.HasValue)
@@ -49,66 +52,79 @@ namespace BuzzIt.Services.Implementations
             return query.OrderByDescending(p => p.Priority).ThenBy(p => p.DueDate).ToList();
         }
 
-        public IEnumerable<Post> GetUpcomingPosts(int days = 7)
+        public IEnumerable<Post> GetUpcomingPosts(int userId, int days = 7)
         {
             var now = DateTime.Now.Date;
             var endDate = now.AddDays(days);
 
-            return _context.Posts
+            return BaseQuery(userId)
                 .Where(p => !p.IsCompleted && p.DueDate.HasValue && p.DueDate.Value.Date >= now && p.DueDate.Value.Date <= endDate)
                 .OrderBy(p => p.DueDate)
                 .ThenByDescending(p => p.Priority)
                 .ToList();
         }
 
-        public IEnumerable<Post> GetOverduePosts()
+        public IEnumerable<Post> GetOverduePosts(int userId)
         {
             var now = DateTime.Now.Date;
 
-            return _context.Posts
+            return BaseQuery(userId)
                 .Where(p => !p.IsCompleted && p.DueDate.HasValue && p.DueDate.Value.Date < now)
                 .OrderByDescending(p => p.Priority)
                 .ThenBy(p => p.DueDate)
                 .ToList();
         }
 
-        public IEnumerable<Post> GetByCategory(Category category)
+        public IEnumerable<Post> GetByCategory(int userId, Category category)
         {
-            return _context.Posts
+            return BaseQuery(userId)
                 .Where(p => p.Category == category)
                 .OrderByDescending(p => p.Priority)
                 .ThenBy(p => p.DueDate)
                 .ToList();
         }
 
-        public IEnumerable<Post> GetByPriority(Priority priority)
+        public IEnumerable<Post> GetByPriority(int userId, Priority priority)
         {
-            return _context.Posts
+            return BaseQuery(userId)
                 .Where(p => p.Priority == priority)
                 .OrderBy(p => p.DueDate)
                 .ToList();
         }
 
-        public Post? GetById(int id)
+        public Post? GetById(int userId, int id)
         {
-            return _context.Posts.Find(id);
+            return BaseQuery(userId).FirstOrDefault(p => p.Id == id);
         }
 
-        public void Create(Post post)
+        public void Create(int userId, Post post)
         {
+            post.UserId = userId;
             _context.Posts.Add(post);
             _context.SaveChanges();
         }
 
-        public void Update(Post post)
+        public void Update(int userId, Post post)
         {
-            _context.Posts.Update(post);
+            var existing = _context.Posts.FirstOrDefault(p => p.Id == post.Id && p.UserId == userId);
+            if (existing == null)
+            {
+                throw new InvalidOperationException("Post not found.");
+            }
+
+            existing.Title = post.Title;
+            existing.Content = post.Content;
+            existing.Category = post.Category;
+            existing.Priority = post.Priority;
+            existing.DueDate = post.DueDate;
+            existing.IsCompleted = post.IsCompleted;
+            existing.CompletedAt = post.CompletedAt;
             _context.SaveChanges();
         }
 
-        public void Delete(int id)
+        public void Delete(int userId, int id)
         {
-            var post = _context.Posts.Find(id);
+            var post = _context.Posts.FirstOrDefault(p => p.Id == id && p.UserId == userId);
             if (post != null)
             {
                 _context.Posts.Remove(post);
@@ -116,9 +132,9 @@ namespace BuzzIt.Services.Implementations
             }
         }
 
-        public void MarkAsDone(int id)
+        public void MarkAsDone(int userId, int id)
         {
-            var post = _context.Posts.Find(id);
+            var post = _context.Posts.FirstOrDefault(p => p.Id == id && p.UserId == userId);
             if (post != null && !post.IsCompleted)
             {
                 post.IsCompleted = true;
@@ -127,19 +143,22 @@ namespace BuzzIt.Services.Implementations
             }
         }
 
-        public int GetTotalCount()
+        public int GetTotalCount(int userId)
         {
-            return _context.Posts.Count();
+            return _context.Posts.Count(p => p.UserId == userId);
         }
 
-        public int GetCompletedCount()
+        public int GetCompletedCount(int userId)
         {
-            return _context.Posts.Count(p => p.IsCompleted);
+            return _context.Posts.Count(p => p.UserId == userId && p.IsCompleted);
         }
 
-        public int GetPendingCount()
+        public int GetPendingCount(int userId)
         {
-            return _context.Posts.Count(p => !p.IsCompleted);
+            return _context.Posts.Count(p => p.UserId == userId && !p.IsCompleted);
         }
+
+        private IQueryable<Post> BaseQuery(int userId) =>
+            _context.Posts.Where(p => p.UserId == userId);
     }
 }

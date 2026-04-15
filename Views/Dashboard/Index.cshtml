@@ -1,0 +1,63 @@
+@model BuzzIt.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard-hero rounded-4 p-4 p-md-5 mb-4">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+            <p class="text-uppercase small fw-semibold dashboard-hero-kicker mb-2">Overview</p>
+            <h1 class="dashboard-title fw-bold text-white mb-2">Hello, <span class="text-warning">@User.Identity?.Name</span></h1>
+            <p class="dashboard-hero-lead mb-0">Here is a snapshot of your workspace. Jump into posts or reminders whenever you are ready.</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <span class="dashboard-hero-badge d-inline-flex align-items-center gap-2 rounded-pill px-3 py-2 small fw-semibold text-white">
+                <i class="bi bi-shield-check"></i> Signed in
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-tile rounded-4 p-3 h-100">
+            <p class="text-muted small mb-1 fw-semibold">Posts</p>
+            <p class="h3 fw-bold mb-0 text-primary">@Model.TotalPosts</p>
+            <p class="small text-muted mb-0">@Model.PendingPosts pending · @Model.CompletedPosts done</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-tile rounded-4 p-3 h-100">
+            <p class="text-muted small mb-1 fw-semibold">Reminders</p>
+            <p class="h3 fw-bold mb-0 text-success">@Model.TotalReminders</p>
+            <p class="small text-muted mb-0">@Model.PendingReminders pending · @Model.CompletedReminders done</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="dashboard-card h-100 rounded-4 p-4 d-flex flex-column">
+            <div class="d-flex align-items-start gap-3 mb-3">
+                <span class="dashboard-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-journal-text"></i></span>
+                <div>
+                    <h2 class="h5 fw-bold mb-1">Posts</h2>
+                    <p class="text-muted small mb-0">Capture ideas, tasks, and notes with categories, priorities, and due dates.</p>
+                </div>
+            </div>
+            <a class="btn btn-gradient mt-auto align-self-start rounded-pill px-4" asp-controller="Post" asp-action="Index">Open posts</a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="dashboard-card h-100 rounded-4 p-4 d-flex flex-column">
+            <div class="d-flex align-items-start gap-3 mb-3">
+                <span class="dashboard-icon bg-success bg-opacity-10 text-success"><i class="bi bi-bell"></i></span>
+                <div>
+                    <h2 class="h5 fw-bold mb-1">Reminders</h2>
+                    <p class="text-muted small mb-0">Schedule what matters and mark items complete as you go.</p>
+                </div>
+            </div>
+            <a class="btn btn-outline-gradient mt-auto align-self-start rounded-pill px-4" asp-controller="Reminder" asp-action="Index">Open reminders</a>
+        </div>
+    </div>
+</div>

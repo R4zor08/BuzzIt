@@ -1,0 +1,281 @@
+{
+  "info": {
+    "_postman_id": "7f4ed14a-5f56-4685-a04d-6f61831778f5",
+    "name": "BuzzIt Local REST API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Local REST API tests using only existing database records."
+  },
+  "item": [
+    {
+      "name": "Posts - Get Existing",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/posts",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "posts"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "const posts = pm.response.json();",
+              "pm.test('Response is an array', function () {",
+              "  pm.expect(Array.isArray(posts)).to.eql(true);",
+              "});",
+              "pm.test('At least one existing post is present', function () {",
+              "  pm.expect(posts.length).to.be.above(0);",
+              "});",
+              "const first = posts[0];",
+              "pm.environment.set('postId', String(first.id));",
+              "pm.environment.set('postTitle', first.title || '');",
+              "pm.environment.set('postContent', first.content || '');",
+              "pm.environment.set('postCategory', String(first.category ?? 0));",
+              "pm.environment.set('postPriority', String(first.priority ?? 1));",
+              "pm.environment.set('postDueDateJson', first.dueDate ? JSON.stringify(first.dueDate) : 'null');"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Posts - Get By Existing ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/posts/{{postId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "posts",
+            "{{postId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "const post = pm.response.json();",
+              "pm.test('ID matches selected existing post', function () {",
+              "  pm.expect(String(post.id)).to.eql(pm.environment.get('postId'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Posts - Update Existing",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"{{postTitle}}\",\n  \"content\": \"{{postContent}}\",\n  \"category\": {{postCategory}},\n  \"priority\": {{postPriority}},\n  \"dueDate\": {{postDueDateJson}},\n  \"isCompleted\": false,\n  \"completedAt\": null\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/posts/{{postId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "posts",
+            "{{postId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Posts - Mark Existing As Done",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/posts/{{postId}}/mark-done",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "posts",
+            "{{postId}}",
+            "mark-done"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 204', function () {",
+              "  pm.response.to.have.status(204);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reminders - Get Existing",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/reminders",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "reminders"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "const reminders = pm.response.json();",
+              "pm.test('Response is an array', function () {",
+              "  pm.expect(Array.isArray(reminders)).to.eql(true);",
+              "});",
+              "if (reminders.length === 0) {",
+              "  pm.environment.unset('reminderId');",
+              "  postman.setNextRequest(null);",
+              "  pm.test('No reminders in DB so reminder-specific tests are skipped', function () {",
+              "    pm.expect(reminders.length).to.eql(0);",
+              "  });",
+              "} else {",
+              "  const first = reminders[0];",
+              "  pm.environment.set('reminderId', String(first.id));",
+              "  pm.test('At least one existing reminder is present', function () {",
+              "    pm.expect(reminders.length).to.be.above(0);",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reminders - Get By Existing ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/reminders/{{reminderId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "reminders",
+            "{{reminderId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "const reminder = pm.response.json();",
+              "pm.test('ID matches selected existing reminder', function () {",
+              "  pm.expect(String(reminder.id)).to.eql(pm.environment.get('reminderId'));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reminders - Mark Existing As Done",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/reminders/{{reminderId}}/mark-done",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "reminders",
+            "{{reminderId}}",
+            "mark-done"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 204', function () {",
+              "  pm.response.to.have.status(204);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5172"
+    }
+  ]
+}

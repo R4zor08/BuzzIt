@@ -2,57 +2,174 @@
 
 @{
     ViewData["Title"] = "Reminders";
+    var filterCategory = ViewBag.Category as BuzzIt.Models.Category?;
+    var filterPriority = ViewBag.Priority as BuzzIt.Models.Priority?;
+    var filterCompleted = ViewBag.IsCompleted as bool?;
+    var searchTerm = ViewBag.SearchTerm as string;
+    var hasActiveFilters = !string.IsNullOrWhiteSpace(searchTerm) || filterCategory != null || filterPriority != null || filterCompleted != null;
 }
 
-<h2>Reminders</h2>
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h1 class="page-title mb-1"><i class="bi bi-bell me-2"></i>Reminders</h1>
+        <p class="text-muted small mb-0">Filter and complete your scheduled reminders.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-create"><i class="bi bi-plus-lg"></i> New reminder</a>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Title)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Time)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsCompleted)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Time)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsCompleted)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                @if (!item.IsCompleted)
+<div class="filter-container animate-fade-in mb-4">
+    <form asp-action="Index" method="get" class="row g-3 align-items-end">
+        <div class="col-12 col-lg-4">
+            <label class="form-label small text-muted mb-1">Search</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" name="searchTerm" value="@searchTerm" class="form-control" placeholder="Title or description…" aria-label="Search reminders" />
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-2">
+            <label class="form-label small text-muted mb-1">Category</label>
+            <select name="category" class="form-select" aria-label="Category">
+                @if (filterCategory == null)
                 {
-                    <form asp-action="MarkAsDone" asp-route-id="@item.Id" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-sm btn-success">Mark Done</button>
-                    </form>
+                    <option value="" selected>All Categories</option>
                 }
-            </td>
-        </tr>
+                else
+                {
+                    <option value="">All Categories</option>
+                }
+                @foreach (BuzzIt.Models.Category cat in Enum.GetValues(typeof(BuzzIt.Models.Category)))
+                {
+                    if (filterCategory == cat)
+                    {
+                        <option value="@((int)cat)" selected>@cat</option>
+                    }
+                    else
+                    {
+                        <option value="@((int)cat)">@cat</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-2">
+            <label class="form-label small text-muted mb-1">Priority</label>
+            <select name="priority" class="form-select" aria-label="Priority">
+                @if (filterPriority == null)
+                {
+                    <option value="" selected>All Priorities</option>
+                }
+                else
+                {
+                    <option value="">All Priorities</option>
+                }
+                @foreach (BuzzIt.Models.Priority pri in Enum.GetValues(typeof(BuzzIt.Models.Priority)))
+                {
+                    if (filterPriority == pri)
+                    {
+                        <option value="@((int)pri)" selected>@pri</option>
+                    }
+                    else
+                    {
+                        <option value="@((int)pri)">@pri</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-2">
+            <label class="form-label small text-muted mb-1">Status</label>
+            <select name="isCompleted" class="form-select" aria-label="Status">
+                @if (filterCompleted == null)
+                {
+                    <option value="" selected>All Status</option>
+                }
+                else
+                {
+                    <option value="">All Status</option>
+                }
+                @if (filterCompleted == false)
+                {
+                    <option value="false" selected>Pending</option>
+                }
+                else
+                {
+                    <option value="false">Pending</option>
+                }
+                @if (filterCompleted == true)
+                {
+                    <option value="true" selected>Completed</option>
+                }
+                else
+                {
+                    <option value="true">Completed</option>
+                }
+            </select>
+        </div>
+        <div class="col-12 col-lg-2 d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-gradient flex-grow-1"><i class="bi bi-funnel"></i> Filter</button>
+            <a asp-action="Index" class="btn btn-outline-gradient flex-grow-1"><i class="bi bi-x-lg"></i> Clear</a>
+        </div>
+    </form>
+</div>
+
+@if (Model.Any())
+{
+    <div class="row g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6 col-xl-4">
+                <div class="reminder-card h-100 @(item.IsCompleted ? "reminder-done" : "")">
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                        <div class="post-meta flex-wrap">
+                            <span class="category-badge category-@item.Category.ToString().ToLower()">@item.Category</span>
+                            <span class="priority-badge priority-@item.Priority.ToString().ToLower()">@item.Priority</span>
+                        </div>
+                        @if (item.IsCompleted)
+                        {
+                            <span class="badge rounded-pill text-bg-success">Done</span>
+                        }
+                    </div>
+                    <h2 class="h6 fw-bold mb-2">@item.Title</h2>
+                    <p class="text-muted small mb-2"><i class="bi bi-clock me-1"></i>@item.Time.ToString("MMM dd, yyyy h:mm tt")</p>
+                    @if (!string.IsNullOrWhiteSpace(item.Description))
+                    {
+                        <p class="small mb-3 reminder-desc">@item.Description</p>
+                    }
+                    @if (item.DueDate.HasValue)
+                    {
+                        <p class="small text-muted mb-3"><i class="bi bi-calendar3 me-1"></i>Due @item.DueDate.Value.ToString("MMM dd, yyyy")</p>
+                    }
+                    <div class="d-flex flex-wrap gap-2 mt-auto pt-3 border-top">
+                        @if (!item.IsCompleted)
+                        {
+                            <form asp-action="MarkAsDone" asp-route-id="@item.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-done btn-sm"><i class="bi bi-check2-circle"></i> Mark as done</button>
+                            </form>
+                        }
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-edit btn-sm"><i class="bi bi-pencil"></i> Edit</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-sm rounded-pill">Delete</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 }
-    </tbody>
-</table>
+else
+{
+    <div class="empty-state animate-fade-in">
+        <i class="bi bi-bell-slash"></i>
+        <h3>No reminders</h3>
+        <p>
+            @if (!hasActiveFilters)
+            { <span>Create a reminder to see it here.</span> }
+            else
+            { <span>Nothing matches your filters. Try clearing them.</span> }
+        </p>
+        @if (!hasActiveFilters)
+        {
+            <a asp-action="Create" class="btn btn-create mt-3"><i class="bi bi-plus-lg"></i> Create reminder</a>
+        }
+        else
+        {
+            <a asp-action="Index" class="btn btn-outline-gradient mt-3">Clear filters</a>
+        }
+    </div>
+}

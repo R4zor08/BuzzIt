@@ -12,13 +12,13 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/posts",
+          "raw": "{{baseUrl}}/api/Post",
           "host": [
             "{{baseUrl}}"
           ],
           "path": [
             "api",
-            "posts"
+            "Post"
           ]
         }
       },
@@ -56,13 +56,13 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/posts/{{postId}}",
+          "raw": "{{baseUrl}}/api/Post/{{postId}}",
           "host": [
             "{{baseUrl}}"
           ],
           "path": [
             "api",
-            "posts",
+            "Post",
             "{{postId}}"
           ]
         }
@@ -100,13 +100,13 @@
           "raw": "{\n  \"title\": \"{{postTitle}}\",\n  \"content\": \"{{postContent}}\",\n  \"category\": {{postCategory}},\n  \"priority\": {{postPriority}},\n  \"dueDate\": {{postDueDateJson}},\n  \"isCompleted\": false,\n  \"completedAt\": null\n}"
         },
         "url": {
-          "raw": "{{baseUrl}}/api/posts/{{postId}}",
+          "raw": "{{baseUrl}}/api/Post/{{postId}}",
           "host": [
             "{{baseUrl}}"
           ],
           "path": [
             "api",
-            "posts",
+            "Post",
             "{{postId}}"
           ]
         }
@@ -131,13 +131,13 @@
         "method": "PATCH",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/posts/{{postId}}/mark-done",
+          "raw": "{{baseUrl}}/api/Post/{{postId}}/mark-done",
           "host": [
             "{{baseUrl}}"
           ],
           "path": [
             "api",
-            "posts",
+            "Post",
             "{{postId}}",
             "mark-done"
           ]

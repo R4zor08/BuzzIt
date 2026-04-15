@@ -1,13 +1,13 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using BuzzIt.DTOs;
-using BuzzIt.Services.Interfaces;
+using BuzzIt.Extensions;
 using BuzzIt.Requests;
+using BuzzIt.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BuzzIt.Controllers
 {
+    [Authorize]
     public class ReminderController : Controller
     {
         private readonly IReminderService _reminderService;
@@ -17,10 +17,28 @@ namespace BuzzIt.Controllers
             _reminderService = reminderService;
         }
 
-        // GET: Reminder
+        private IActionResult? RequireUserId(out int userId)
+        {
+            var id = User.GetUserId();
+            if (id is null)
+            {
+                userId = 0;
+                return Challenge();
+            }
+
+            userId = id.Value;
+            return null;
+        }
+
         [HttpGet]
         public async Task<IActionResult> Index([FromQuery] SearchReminderRequest request)
         {
+            var auth = RequireUserId(out var userId);
+            if (auth != null)
+            {
+                return auth;
+            }
+
             if (!request.IsValid())
             {
                 foreach (var error in request.GetErrors())
@@ -30,9 +48,10 @@ namespace BuzzIt.Controllers
             }
 
             var reminders = await _reminderService.SearchRemindersAsync(
-                request.SearchTerm, 
-                request.Category, 
-                request.Priority, 
+                userId,
+                request.SearchTerm,
+                request.Category,
+                request.Priority,
                 request.IsCompleted);
 
             ViewBag.SearchTerm = request.SearchTerm;
@@ -43,11 +62,16 @@ namespace BuzzIt.Controllers
             return View(reminders);
         }
 
-        // GET: Reminder/Details/5
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var reminder = await _reminderService.GetReminderByIdAsync(id);
+            var auth = RequireUserId(out var userId);
+            if (auth != null)
+            {
+                return auth;
+            }
+
+            var reminder = await _reminderService.GetReminderByIdAsync(userId, id);
             if (reminder == null)
             {
                 return NotFound();
@@ -55,18 +79,22 @@ namespace BuzzIt.Controllers
             return View(reminder);
         }
 
-        // GET: Reminder/Create
         [HttpGet]
         public IActionResult Create()
         {
             return View(new CreateReminderRequest());
         }
 
-        // POST: Reminder/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([FromForm] CreateReminderRequest request)
         {
+            var auth = RequireUserId(out var userId);
+            if (auth != null)
+            {
+                return auth;
+            }
+
             if (!request.IsValid())
             {
                 foreach (var error in request.GetErrors())
@@ -87,23 +115,28 @@ namespace BuzzIt.Controllers
                     Priority = request.Priority,
                     DueDate = request.DueDate
                 };
-                await _reminderService.AddReminderAsync(reminderDto);
+                await _reminderService.AddReminderAsync(userId, reminderDto);
                 return RedirectToAction(nameof(Index));
             }
             return View(request);
         }
 
-        // GET: Reminder/Edit/5
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var reminder = await _reminderService.GetReminderByIdAsync(id);
+            var auth = RequireUserId(out var userId);
+            if (auth != null)
+            {
+                return auth;
+            }
+
+            var reminder = await _reminderService.GetReminderByIdAsync(userId, id);
             if (reminder == null)
             {
                 return NotFound();
             }
 
-            var request = new UpdateReminderRequest
+            var updateRequest = new UpdateReminderRequest
             {
                 Id = reminder.Id,
                 Title = reminder.Title,
@@ -116,14 +149,19 @@ namespace BuzzIt.Controllers
                 CompletedAt = reminder.CompletedAt
             };
 
-            return View(request);
+            return View(updateRequest);
         }
 
-        // POST: Reminder/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit([FromForm] UpdateReminderRequest request)
         {
+            var auth = RequireUserId(out var userId);
+            if (auth != null)
+            {
+                return auth;
+            }
+
             if (!request.IsValid())
             {
                 foreach (var error in request.GetErrors())
@@ -149,7 +187,7 @@ namespace BuzzIt.Controllers
                         IsCompleted = request.IsCompleted,
                         CompletedAt = request.CompletedAt
                     };
-                    await _reminderService.UpdateReminderAsync(reminderDto);
+                    await _reminderService.UpdateReminderAsync(userId, reminderDto);
                     return RedirectToAction(nameof(Index));
                 }
                 catch (InvalidOperationException)
@@ -160,11 +198,16 @@ namespace BuzzIt.Controllers
             return View(request);
         }
 
-        // GET: Reminder/Delete/5
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
-            var reminder = await _reminderService.GetReminderByIdAsync(id);
+            var auth = RequireUserId(out var userId);
+            if (auth != null)
+            {
+                return auth;
+            }
+
+            var reminder = await _reminderService.GetReminderByIdAsync(userId, id);
             if (reminder == null)
             {
                 return NotFound();
@@ -172,11 +215,16 @@ namespace BuzzIt.Controllers
             return View(reminder);
         }
 
-        // POST: Reminder/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed([FromForm] DeleteReminderRequest request)
         {
+            var auth = RequireUserId(out var userId);
+            if (auth != null)
+            {
+                return auth;
+            }
+
             if (!request.IsValid())
             {
                 return BadRequest(request.GetErrors());
@@ -184,7 +232,7 @@ namespace BuzzIt.Controllers
 
             try
             {
-                await _reminderService.DeleteReminderAsync(request.Id);
+                await _reminderService.DeleteReminderAsync(userId, request.Id);
                 return RedirectToAction(nameof(Index));
             }
             catch (InvalidOperationException)
@@ -193,19 +241,24 @@ namespace BuzzIt.Controllers
             }
         }
 
-        // POST: Reminder/MarkAsDone/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> MarkAsDone([FromForm] MarkReminderDoneRequest request)
+        public async Task<IActionResult> MarkAsDone(int id)
         {
-            if (!request.IsValid())
+            var auth = RequireUserId(out var userId);
+            if (auth != null)
             {
-                return BadRequest(request.GetErrors());
+                return auth;
+            }
+
+            if (id <= 0)
+            {
+                return BadRequest();
             }
 
             try
             {
-                await _reminderService.MarkAsDoneAsync(request.Id);
+                await _reminderService.MarkAsDoneAsync(userId, id);
                 return RedirectToAction(nameof(Index));
             }
             catch (InvalidOperationException)

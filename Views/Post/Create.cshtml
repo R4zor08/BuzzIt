@@ -5,53 +5,55 @@
 }
 
 <div class="form-container animate-fade-in">
-    <h1><i class="bi bi-plus-circle-fill"></i> Create Post</h1>
-    
-    <form asp-action="Create" method="post">
+    <h1 class="d-flex flex-wrap align-items-center gap-2">
+        <i class="bi bi-plus-circle-fill text-success" aria-hidden="true"></i>
+        <span>Create Post</span>
+    </h1>
+
+    <form asp-controller="Post" asp-action="Create" method="post" class="needs-validation" novalidate>
+        @Html.AntiForgeryToken()
         <div class="mb-4">
             <label asp-for="Title" class="form-label">
                 <i class="bi bi-type"></i> Title
             </label>
-            <input asp-for="Title" class="form-control" placeholder="Enter an engaging title..." />
-            <span asp-validation-for="Title" class="text-danger"></span>
+            <input asp-for="Title" class="form-control" placeholder="Enter an engaging title..." autocomplete="off" />
+            <span asp-validation-for="Title" class="text-danger small d-block mt-1"></span>
         </div>
-        
+
         <div class="mb-4">
             <label asp-for="Content" class="form-label">
                 <i class="bi bi-chat-text"></i> Content
             </label>
             <textarea asp-for="Content" class="form-control" rows="6" placeholder="Share your thoughts with the world..."></textarea>
-            <span asp-validation-for="Content" class="text-danger"></span>
+            <span asp-validation-for="Content" class="text-danger small d-block mt-1"></span>
         </div>
-        
-        <div class="row mb-4">
-            <div class="col-md-4">
+
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-6 col-lg-4">
                 <label asp-for="Category" class="form-label">
                     <i class="bi bi-folder"></i> Category
                 </label>
-                <select asp-for="Category" class="form-control" asp-items="Html.GetEnumSelectList<BuzzIt.Models.Category>()">
-                </select>
+                <select asp-for="Category" class="form-select" asp-items="Html.GetEnumSelectList<BuzzIt.Models.Category>()"></select>
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-6 col-lg-4">
                 <label asp-for="Priority" class="form-label">
                     <i class="bi bi-flag"></i> Priority
                 </label>
-                <select asp-for="Priority" class="form-control" asp-items="Html.GetEnumSelectList<BuzzIt.Models.Priority>()">
-                </select>
+                <select asp-for="Priority" class="form-select" asp-items="Html.GetEnumSelectList<BuzzIt.Models.Priority>()"></select>
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-6 col-lg-4">
                 <label asp-for="DueDate" class="form-label">
-                    <i class="bi bi-calendar"></i> Due Date
+                    <i class="bi bi-calendar"></i> Due Date <span class="text-muted fw-normal">(optional)</span>
                 </label>
                 <input asp-for="DueDate" class="form-control" type="date" />
             </div>
         </div>
-        
-        <div class="d-flex gap-3">
+
+        <div class="d-flex flex-wrap gap-3 pt-2">
             <button type="submit" class="btn btn-gradient btn-gradient-success">
                 <i class="bi bi-check-circle-fill"></i> Create Post
             </button>
-            <a asp-action="Index" class="btn btn-outline-gradient">
+            <a asp-controller="Post" asp-action="Index" class="btn btn-outline-gradient">
                 <i class="bi bi-arrow-left"></i> Back to Posts
             </a>
         </div>

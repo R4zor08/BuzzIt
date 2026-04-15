@@ -19,24 +19,24 @@ namespace BuzzIt.Services.Implementations
             _context = context;
         }
 
-        public async Task<IEnumerable<ReminderDto>> GetAllRemindersAsync()
+        public async Task<IEnumerable<ReminderDto>> GetAllRemindersAsync(int userId)
         {
-            return await _context.Reminders
+            return await BaseQuery(userId)
                 .OrderByDescending(r => r.Priority)
                 .ThenBy(r => r.DueDate)
                 .Select(r => MapToDto(r))
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<ReminderDto>> SearchRemindersAsync(string? searchTerm, Category? category, Priority? priority, bool? isCompleted)
+        public async Task<IEnumerable<ReminderDto>> SearchRemindersAsync(int userId, string? searchTerm, Category? category, Priority? priority, bool? isCompleted)
         {
-            var query = _context.Reminders.AsQueryable();
+            var query = BaseQuery(userId);
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                searchTerm = searchTerm.Trim().ToLowerInvariant();
-                query = query.Where(r => r.Title.ToLowerInvariant().Contains(searchTerm) ||
-                                          r.Description.ToLowerInvariant().Contains(searchTerm));
+                var term = searchTerm.Trim().ToLowerInvariant();
+                query = query.Where(r => r.Title.ToLower().Contains(term) ||
+                                          r.Description.ToLower().Contains(term));
             }
 
             if (category.HasValue)
@@ -61,12 +61,12 @@ namespace BuzzIt.Services.Implementations
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<ReminderDto>> GetUpcomingRemindersAsync(int days = 7)
+        public async Task<IEnumerable<ReminderDto>> GetUpcomingRemindersAsync(int userId, int days = 7)
         {
             var now = DateTime.Now;
             var endDate = now.AddDays(days);
 
-            return await _context.Reminders
+            return await BaseQuery(userId)
                 .Where(r => !r.IsCompleted && r.Time >= now && r.Time <= endDate)
                 .OrderBy(r => r.Time)
                 .ThenByDescending(r => r.Priority)
@@ -74,12 +74,12 @@ namespace BuzzIt.Services.Implementations
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<ReminderDto>> GetOverdueRemindersAsync()
+        public async Task<IEnumerable<ReminderDto>> GetOverdueRemindersAsync(int userId)
         {
             var now = DateTime.Now;
 
-            return await _context.Reminders
-                .Where(r => !r.IsCompleted && 
+            return await BaseQuery(userId)
+                .Where(r => !r.IsCompleted &&
                            ((r.DueDate.HasValue && r.DueDate.Value.Date < now.Date) ||
                             (!r.DueDate.HasValue && r.Time < now)))
                 .OrderByDescending(r => r.Priority)
@@ -88,10 +88,11 @@ namespace BuzzIt.Services.Implementations
                 .ToListAsync();
         }
 
-        public async Task AddReminderAsync(ReminderDto reminderDto)
+        public async Task AddReminderAsync(int userId, ReminderDto reminderDto)
         {
             var reminder = new Reminder
             {
+                UserId = userId,
                 Title = reminderDto.Title,
                 Time = reminderDto.Time,
                 Description = reminderDto.Description,
@@ -107,9 +108,9 @@ namespace BuzzIt.Services.Implementations
             reminderDto.Id = reminder.Id;
         }
 
-        public async Task UpdateReminderAsync(ReminderDto reminderDto)
+        public async Task UpdateReminderAsync(int userId, ReminderDto reminderDto)
         {
-            var reminder = await _context.Reminders.FindAsync(reminderDto.Id);
+            var reminder = await _context.Reminders.FirstOrDefaultAsync(r => r.Id == reminderDto.Id && r.UserId == userId);
             if (reminder == null)
                 throw new InvalidOperationException("Reminder not found.");
 
@@ -126,9 +127,9 @@ namespace BuzzIt.Services.Implementations
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteReminderAsync(int id)
+        public async Task DeleteReminderAsync(int userId, int id)
         {
-            var reminder = await _context.Reminders.FindAsync(id);
+            var reminder = await _context.Reminders.FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
             if (reminder == null)
                 throw new InvalidOperationException("Reminder not found.");
 
@@ -136,18 +137,18 @@ namespace BuzzIt.Services.Implementations
             await _context.SaveChangesAsync();
         }
 
-        public async Task<ReminderDto?> GetReminderByIdAsync(int id)
+        public async Task<ReminderDto?> GetReminderByIdAsync(int userId, int id)
         {
-            var reminder = await _context.Reminders.FindAsync(id);
+            var reminder = await _context.Reminders.FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
             if (reminder == null)
                 return null;
 
             return MapToDto(reminder);
         }
 
-        public async Task MarkAsDoneAsync(int id)
+        public async Task MarkAsDoneAsync(int userId, int id)
         {
-            var reminder = await _context.Reminders.FindAsync(id);
+            var reminder = await _context.Reminders.FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
             if (reminder == null)
                 throw new InvalidOperationException("Reminder not found.");
 
@@ -159,6 +160,18 @@ namespace BuzzIt.Services.Implementations
                 await _context.SaveChangesAsync();
             }
         }
+
+        public Task<int> GetTotalCountAsync(int userId) =>
+            _context.Reminders.CountAsync(r => r.UserId == userId);
+
+        public Task<int> GetPendingCountAsync(int userId) =>
+            _context.Reminders.CountAsync(r => r.UserId == userId && !r.IsCompleted);
+
+        public Task<int> GetCompletedCountAsync(int userId) =>
+            _context.Reminders.CountAsync(r => r.UserId == userId && r.IsCompleted);
+
+        private IQueryable<Reminder> BaseQuery(int userId) =>
+            _context.Reminders.Where(r => r.UserId == userId);
 
         private static ReminderDto MapToDto(Reminder r) => new ReminderDto
         {
