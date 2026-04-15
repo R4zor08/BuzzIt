@@ -1,7 +1,6 @@
 using BuzzIt.Data;
 using BuzzIt.Models;
 using BuzzIt.Services.Interfaces;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace BuzzIt.Services.Implementations;
@@ -9,14 +8,10 @@ namespace BuzzIt.Services.Implementations;
 public class AuthService : IAuthService
 {
     private readonly ApplicationDbContext _context;
-    private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
 
-    public AuthService(
-        ApplicationDbContext context,
-        IPasswordHasher<ApplicationUser> passwordHasher)
+    public AuthService(ApplicationDbContext context)
     {
         _context = context;
-        _passwordHasher = passwordHasher;
     }
 
     public async Task<ApplicationUser?> ValidateCredentialsAsync(string username, string password)
@@ -30,16 +25,21 @@ public class AuthService : IAuthService
             return null;
         }
 
-        var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
-        return result == PasswordVerificationResult.Failed ? null : user;
+        return BCrypt.Net.BCrypt.Verify(password, user.PasswordHash) ? user : null;
     }
 
-    public async Task<(bool Success, string? Error, ApplicationUser? User)> RegisterAsync(string username, string password)
+    public async Task<(bool Success, string? Error, ApplicationUser? User)> RegisterAsync(string username, string email, string password)
     {
         var normalizedUsername = username.Trim();
         if (string.IsNullOrWhiteSpace(normalizedUsername))
         {
             return (false, "Username is required.", null);
+        }
+
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(normalizedEmail))
+        {
+            return (false, "Email is required.", null);
         }
 
         var exists = await _context.Users.AnyAsync(existing =>
@@ -50,13 +50,22 @@ public class AuthService : IAuthService
             return (false, "That username is already taken.", null);
         }
 
+        var emailExists = await _context.Users.AnyAsync(existing =>
+            existing.Email.ToLower() == normalizedEmail);
+
+        if (emailExists)
+        {
+            return (false, "That email is already registered.", null);
+        }
+
         var user = new ApplicationUser
         {
             Username = normalizedUsername,
+            Email = normalizedEmail,
             Role = "User"
         };
 
-        user.PasswordHash = _passwordHasher.HashPassword(user, password);
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();

@@ -19,6 +19,11 @@
             <span asp-validation-for="Username" class="text-warning small"></span>
         </div>
         <div class="mb-3">
+            <label asp-for="Email" class="form-label auth-muted small fw-semibold"></label>
+            <input asp-for="Email" class="form-control form-control-lg auth-input" autocomplete="email" placeholder="Email" />
+            <span asp-validation-for="Email" class="text-warning small"></span>
+        </div>
+        <div class="mb-3">
             <label asp-for="Password" class="form-label auth-muted small fw-semibold"></label>
             <input asp-for="Password" class="form-control form-control-lg auth-input" autocomplete="new-password" placeholder="Password" />
             <span asp-validation-for="Password" class="text-warning small"></span>

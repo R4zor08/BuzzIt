@@ -22,6 +22,10 @@ namespace BuzzIt.Data
                 .HasIndex(user => user.Username)
                 .IsUnique();
 
+            modelBuilder.Entity<ApplicationUser>()
+                .HasIndex(user => user.Email)
+                .IsUnique();
+
             modelBuilder.Entity<Post>()
                 .HasOne(p => p.User)
                 .WithMany()

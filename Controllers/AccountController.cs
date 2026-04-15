@@ -95,7 +95,7 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var result = await _authService.RegisterAsync(model.Username, model.Password);
+        var result = await _authService.RegisterAsync(model.Username, model.Email, model.Password);
         if (!result.Success)
         {
             ModelState.AddModelError(string.Empty, result.Error ?? "Registration failed.");

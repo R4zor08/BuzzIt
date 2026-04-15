@@ -684,3 +684,4 @@ C:\Users\Admin\System Apps\BuzzIt\bin\Debug\net8.0\build-verify3\BuzzIt.runtimec
 C:\Users\Admin\System Apps\BuzzIt\bin\Debug\net8.0\build-verify3\BuzzIt.staticwebassets.endpoints.json
 C:\Users\Admin\System Apps\BuzzIt\bin\Debug\net8.0\build-verify3\BuzzIt.staticwebassets.runtime.json
 C:\Users\Admin\System Apps\BuzzIt\bin\Debug\net8.0\build-verify3\postman\BuzzIt.Local.REST.postman_collection.json
+C:\Users\Admin\System Apps\BuzzIt\bin\Debug\net8.0\BCrypt.Net-Next.dll

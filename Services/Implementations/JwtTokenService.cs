@@ -23,8 +23,12 @@ public class JwtTokenService : IJwtTokenService
         {
             new(JwtRegisteredClaimNames.Sub, user.Username),
             new(JwtRegisteredClaimNames.UniqueName, user.Username),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new("user_id", user.Id.ToString()),
             new(ClaimTypes.Name, user.Username),
+            new("username", user.Username),
             new(ClaimTypes.Role, user.Role),
+            new("role", user.Role),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

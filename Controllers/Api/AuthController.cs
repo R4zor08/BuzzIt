@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var result = await _authService.RegisterAsync(request.Username, request.Password);
+        var result = await _authService.RegisterAsync(request.Username, request.Email, request.Password);
         if (!result.Success || result.User == null)
         {
             return BadRequest(new { error = result.Error ?? "Registration failed." });
